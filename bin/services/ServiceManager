@@ -1,0 +1,72 @@
+#!/usr/bin/env node
+
+/**
+ * For service return
+ * @type {{name: undefined, status: undefined, infomsg: undefined, pid: undefined}}
+ */
+let svc_info = {
+    name: undefined,
+    status: undefined
+}
+
+let _managed_services = [
+    "smbd",
+    "plexmediaserver"
+];
+
+
+let ServiceManager = {
+
+    /**
+     * Return service status
+     * @param svcname
+     */
+    getServiceStatus: function(svcname, callback){
+
+        let exec = require('child_process').exec;
+        exec("service "+svcname+" status", function(error,stdout,stderr){
+
+            if(error) throw error;
+            let data_svc = stdout.split('\n');
+            let svc= svc_info;
+            svc.name = data_svc[0].split(" - ")[1];
+            svc.status = (data_svc[2].split("Active: ")[1].indexOf("running"))?true:false;
+
+            callback(svc);
+
+        });
+
+    },
+
+    /**
+     * Return all service status
+     */
+    getAllServiceStatus: function(callback){
+        let svc_infos = [];
+        for(let svc in _managed_services){
+            this.getServiceStatus(_managed_services[svc], function(infos){
+                svc_info += infos;
+                console.log(svc_info);
+
+                /*if(svc_info.length == _managed_services.length){
+                    callback(svc_info);
+                }*/
+            });
+        }
+    },
+
+    startService: function(svcname, callback){
+
+    },
+
+    stopService: function(svcname, callback){
+
+    },
+
+    restartService: function(svcname){
+
+    }
+
+}
+
+module.exports = ServiceManager;

@@ -1,0 +1,94 @@
+extends template
+
+block content
+
+	.row
+		.sixteen.wide.column
+			.ui.segment
+				h3.ui.header Before start
+
+				p You need to have theses element before continue :
+				ul.list
+					li AWS account (Free account is working too)
+					li An IAM role with access to create and delete an EC2 instance
+					li An IAM user with ID and Secret Key
+					li Restrict the IAM account with limitation usage
+
+				.ui.grid
+					.row
+						.height.wide.column
+							.ui.secondary.segment
+								h3.ui.header EC2 Credentials
+								if !datas.credential
+									.ui.warning.message
+										i.warning.icon
+										| No credentials found on the PI, please save new one
+								else if datas.error != null
+									.ui.error.message
+										i.warning.icon
+										| #{datas.error.message} 
+								else if datas.ec2 == null
+									.ui.warning.message
+										i.warning.icon
+										| Connected but no EC2 running with PI NAME tag
+								else
+									.ui.success.message 
+										i.large.icon(class=((datas.ec2.State.Name=!"pending")?"wait loading":"checkmark"))
+										| Connected to AWS <i><strong>(#{(datas.ec2.length==0)?"No EC2 running":"EC2 is "+datas.ec2.State.Name})</strong></i>
+
+								form.ui.form(method="POST",action="/aws/iam")
+									.two.fields
+										.field
+											label IAM ID
+											input(type="text",name="iam_id",value=(datas.credential.iam_id))
+										.field
+											label IAM Key
+											input(type="password",name="iam_secret",value=(datas.credential.iam_secret))
+									.field
+										label Region of EC2
+										input(type="text",name="aws_region",value=(datas.credential.aws_region))
+									.field
+										label Security Group (his ID)
+										input(type="text",name="ec2_sg",value=(datas.credential.ec2_sg))
+									.field
+										label SSH key of EC2
+										input(type="text",name="ec2_key",value=(datas.credential.ec2_key))
+									.field
+										.ui.checkbox
+											input.hidden(type="checkbox",name="ec2_limit_one",checked=(datas.credential.ec2_limit_one),value=1)
+											label Secure me to not run more one instance on my AWS account
+									.field
+										label Endpoint of the seedbox (ec2 must be in run state)
+										if datas.ec2 != null
+											input.ui.disabled.input(readOnly,type=text,value=("http://"+datas.ec2.PublicDnsName),onClick=("window.open('http://"+datas.ec2.PublicDnsName+"','_blank')"))
+										else
+											input.ui.disabled.input(readOnly)
+									button.ui.submit.fluid.button Save credentials
+
+						.height.wide.column
+							if datas.credential != false
+								.ui.secondary.segment
+									.h3.ui.header EC2 information
+
+									.ui.terciary.segment
+										pre
+											if(datas.ec2 == null)
+												| no EC2 running
+											else
+												| ID : #{datas.ec2.InstanceId}<br />
+												| LaunchTime : #{datas.ec2.LaunchTime}
+
+									.h3.ui.header EC2 power manager
+
+									a.ui.button(href="/aws/start",class=((datas.ec2 != null)?"disabled":"")) Power On
+									a.ui.red.button(href="/aws/stop",class=((datas.ec2 == null)?"disabled":"")) Power Off
+
+									if datas.error_start != undefined
+										.ui.warning.message
+											| #{datas.error_start}
+									if datas.success_start != undefined
+										.ui.success.message
+											| #{datas.success_start}
+
+	script.
+		$(".checkbox").checkbox();

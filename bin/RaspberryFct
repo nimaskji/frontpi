@@ -1,0 +1,159 @@
+#!/usr/bin/env node
+
+let RaspberryFct = {
+
+    png_version: {
+        pi_0: "",
+        pi_1: "",
+        pi_2: "",
+        pi_3: ""
+    },
+
+    getSystemInfo: function(callback){
+        /**
+         * Get all System Datas
+         */
+        let os = require("os");
+        let datas = {
+            cpus : {
+                Model: os.cpus()[0].model,
+                Speed: os.cpus()[0].speed,
+                Cores: os.cpus().length
+            },
+            ram : {
+                Free: Math.round(os.freemem() / 1024 / 1024)+"Mo",
+                Total: Math.round(os.totalmem() / 1024 / 1024)+"Mo",
+                Used: Math.round( ((os.totalmem() - os.freemem()) / os.totalmem() ) * 100 )+"%"
+            },
+            hostname: os.hostname(),
+            avg: os.loadavg(),
+            nic: os.networkInterfaces(),
+            uptime: os.uptime(),
+            hardware: {
+                Version: undefined,
+                Hardware: undefined,
+                Revision: undefined,
+                Serial: undefined
+            },
+            storages: {},
+            traffic: {},
+            temp: undefined
+        };
+
+        /**
+         * Get the model information and HW infos
+         */
+        let exec = require('child_process').exec;
+
+        exec('cat /proc/device-tree/model | awk \'{print $0}\' && cat /proc/cpuinfo | grep Hardware | awk \'{print $3}\' && cat /proc/cpuinfo | grep Revision | awk \'{print $3}\' && cat /proc/cpuinfo | grep Serial | awk \'{print $3}\' && cat /sys/class/thermal/thermal_zone0/temp', (error, stdout, stderr) => {
+            if(error){
+                console.error(`exec error: ${error}`);
+                throw stderr;
+            }
+            else{
+                datas.hardware.Version = stdout.split('\n')[0];
+                datas.hardware.Hardware = stdout.split('\n')[1];
+                datas.hardware.Revision = stdout.split('\n')[2];
+                datas.hardware.Serial = stdout.split('\n')[3];
+                datas.temp = stdout.split('\n')[4];
+
+                /**
+                 * Now call the function to get Storage Information
+                 */
+                exec("df -t ext4 -t vfat -t ntfs -t fuseblk | awk '{ print $1\",\"$2\",\"$3\",\"$4\",\"$5\",\"$6}' | sed -n '1!p'", function(error,stdout,stderr){
+                    if(error){
+                        console.error(`exec error: ${error}`);
+                        throw stderr;
+                    }
+                    else {
+
+                        let stores = stdout.split('\n');
+                        stores.pop();
+                        for(index in stores){
+                            let infos = stores[index].split(',');
+                            datas.storages[infos[5]] = {
+                                device: infos[0],
+                                size: infos[1],
+                                used: infos[2],
+                                available: infos[3],
+                                use: infos[4],
+                                mounted: infos[5]
+                            };
+                        }
+
+                        /**
+                         * Call the function to get netTraffic
+                         */
+                        RaspberryFct.getNetInfo('wlan0', function(traffic){
+
+                            datas.traffic = traffic;
+                            /**
+                             * Return all data to the CallBack function
+                             */
+                            callback(datas);
+
+                        });
+                    }
+                });
+            }
+        });
+    },
+
+    /**
+     * Return traffic network informations on iface
+     * @param iface
+     * @param callback
+     */
+    getNetInfo: function(iface, callback){
+
+        let exec = require('child_process').exec;
+        exec("vnstat -i "+iface+" -m --oneline", function (error, stdout, stderr) {
+
+            if(error) throw error;
+
+
+            let infos = stdout.split(";");
+            let traffic = {
+                name: infos[1],
+                today : {
+                    rx: infos[3].replace(" MiB",""),
+                    tx: infos[4].replace(" MiB",""),
+                    total: infos[5].replace(" MiB",""),
+                    avgrate: infos[6]
+                },
+
+                month : {
+                    rx: infos[8].replace(" MiB",""),
+                    tx: infos[9].replace(" MiB",""),
+                    total: infos[10].replace(" MiB",""),
+                    avgrate: infos[11]
+                }
+            }
+
+            callback(traffic);
+
+        });
+
+    },
+
+    rebootPi: function(){
+        let exec = require('child_process').exec;
+        exec("sudo reboot", function (error, stdout, stderr) {
+            
+        });
+    },
+
+    encodeBootstrap: function(){
+        let fs = require("fs");
+        let bootstrap_base64 = {
+            datas: new Buffer(fs.readFileSync('bootstrap.sh','utf8')).toString('base64')
+        }
+
+        fs.writeFileSync("bootstrap.encoded.json", JSON.stringify(bootstrap_base64));
+    }
+
+
+
+}
+
+module.exports = RaspberryFct;

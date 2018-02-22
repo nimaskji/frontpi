@@ -1,0 +1,14 @@
+#modal.ui.small.modal
+    .header Redémarrage
+    .content
+        p
+            i.info.icon
+            | Souhaitez vous lancer un redémarrage de votre PI ?
+    .actions
+        a.ui.orange.button(href="/reboot") Oui
+        .ui.cancel.button Non
+
+    script.
+        $('#modal').modal({
+            closable: false
+        })

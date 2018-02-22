@@ -1,0 +1,33 @@
+extends template
+
+block content
+
+    .row
+        .six.wide.column
+            #boxmessage.ui.icon.message
+                i#icon.wait.icon
+                .content
+                    .header Reboot en cours
+                    p Veuillez patientez et ne pas recharger la page
+                    pre#message Waiting ui...
+
+    script.
+
+        setTimeout(function(){
+            var interval = setInterval(function () {
+                $("#message").text($("#message").html() + ".")
+                $.ajax({
+                    url: "/",
+                    type: "GET",
+                    success: function (data) {
+                        clearInterval(interval);
+                        $("#boxmessage").toggleClass("success");
+                        $("#icon").toggleClass("wait");
+                        $("#icon").toggleClass("checkmark");
+                        $("#message").text("UI ready, refresh on home page")
+                        document.location.href = "/";
+                    }
+                })
+
+            }, 2000);
+        }, 5000);

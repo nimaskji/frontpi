@@ -1,0 +1,44 @@
+doctype html
+html
+    head
+        title FrontPI
+        link(rel="stylesheet",href="/public/semantic/semantic.css")
+        script(type="text/javascript",src="https://code.jquery.com/jquery-3.1.1.js")
+        script(type="text/javascript",src="/public/semantic/semantic.js")
+
+
+    body
+        .ui.centered.grid.container
+            .row
+                .sixteen.wide.fluid.column
+                    .ui.clearing.segment(style="margin-top:30px")
+                        h3.ui.left.floated.header
+                            i.settings.icon
+                            .content FrontPI
+                                .sub.header Monitor your PI here
+                        h5.ui.right.floated.header
+                            | v0.0.1
+
+                    .ui.fluid.menu
+                        a.item(href="/",class=(page=='system'?'active':''))
+                            i.microchip.icon
+                            | Système
+                        a.item(href="/aws", class=(page=='aws'?'active':''))
+                            i.cubes.icon
+                            | AWS Seedbox
+                        //a.item(href="/services",class=(page=='services'?'active':''))
+                            i.options.icon
+                            | Services
+                        //a.item(href="/shares",class=(page=='shares'?'active':''))
+                            i.cubes.icon
+                            | Partages
+                        .right.menu
+                            .item Up since #{Math.round((new Date(datas.uptime*1000).getUTCHours())/24)} days #{(new Date(datas.uptime*1000).getUTCHours())}h #{(new Date(datas.uptime*1000).getUTCMinutes())}m
+                            a.item(onclick="$('#modal').modal('show')")
+                                i.power.icon
+                                | Reboot
+
+            block content
+
+        include ./reboot
+

@@ -1,0 +1,108 @@
+extends template
+
+block content
+
+    .row
+
+        .five.wide.stretched.column
+            .ui.grey.segment
+                h3.header
+                    | CPU Infos
+                    .ui.inverted.green.mini.right.floated.statistic(style="")
+                        .value
+                            i.area.chart.icon
+                            | #{(Math.round(datas.avg[0])*100)/datas.cpus.Cores}%
+                    .ui.inverted.orange.mini.right.floated.statistic(style="")
+                        .value
+                            i.three.quarters.thermometer.icon
+                            | #{Math.round(datas.temp/1000)}°C
+                .ui.list
+                        each item,key in datas.cpus
+                            .item
+                                .content
+                                    .header= key
+                                    .description= item
+                        .item
+                            .content
+                                .header Average
+                                .description 1min : #{(Math.round(datas.avg[0])*100)/datas.cpus.Cores}% / 5min : #{(Math.round(datas.avg[1])*100)/datas.cpus.Cores}% / 15min : #{(Math.round(datas.avg[2])*100)/datas.cpus.Cores}%
+
+        .six.wide.stretched.column
+            .ui.grey.segment
+                h3.header HW Infos
+                .ui.list
+                    each item,key in datas.hardware
+                        .item
+                            .content
+                                .header= key
+                                .description= item
+
+        .five.wide.stretched.column
+            .ui.grey.segment
+                h3.header
+                    | RAM Infos
+                    .ui.inverted.green.mini.right.floated.statistic(style="")
+                        .value
+                            i.area.chart.icon
+                            | #{datas.ram.Used}
+
+                .ui.list
+                    each item,key in datas.ram
+                        .item
+                            .content
+                                .header= key
+                                .description= item
+
+    .row
+        .sixteen.wide.column
+            .ui.grey.segment
+                h3.header Storages
+                table.ui.compact.small.striped.table
+                    thead
+                        th Device
+                        th Mounted on
+                        th Size
+                        th Used
+                        th Available
+                        th Full
+                    tbody
+                        each disk in datas.storages
+                            tr
+                                td= disk.device
+                                td= disk.mounted
+                                //td= Math.round(disk.size / 1024 / 1024 ) + "G"
+                                //td= Math.round(disk.used / 1024 / 1024 ) + "G"
+                                //td= Math.round(disk.available / 1024 / 1024 ) + "G"
+                                td= Math.round(disk.size / 1024) + "M"
+                                td= Math.round(disk.used / 1024) + "M"
+                                td= Math.round(disk.available / 1024) + "M"
+                                td
+                                    .ui.small.progress(data-value=(disk.use.split('%')[0]),data-total="100",style="margin: 0px;")
+                                        .bar
+                                            .progress
+
+                h3.header Network stats
+                table.ui.compact.small.striped.table
+                    thead
+                        th Device
+                        th
+                            i.download.icon
+                            | Today (MiB)
+                        th
+                            i.download.icon
+                            | Month (MiB)
+                        th
+                            i.wait.icon
+                            | Avg rate
+                    tbody
+                        tr
+                            td= datas.traffic.name
+                            td= datas.traffic.today.rx + " in / " + datas.traffic.today.tx + " out"
+                            td= datas.traffic.month.tx + " in / " + datas.traffic.month.tx + " out"
+                            td= datas.traffic.today.avgrate
+
+    script.
+        $(".progress").progress({
+            showActivity: false
+        });
+
