@@ -11,6 +11,11 @@ apt update -y && apt upgrade -y
 # Install soft
 apt install rtorrent git sshfs apache2 php unzip unrar-free mediainfo ffmpeg sox curl -y
 
+# Configure apache
+a2dissite 000-default.conf
+a2enssite default-ssl.conf
+service apache2 reload
+
 # PASTE YOUR OWN PRIVATE KEY HERE !! FOLLOW THE SAME LOGIC !!
 echo "-----BEGIN RSA PRIVATE KEY-----" > /home/admin/.ssh/id_rsa
 echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" >> /home/admin/.ssh/id_rsa

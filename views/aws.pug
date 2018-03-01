@@ -60,7 +60,7 @@ block content
 									.field
 										label Endpoint of the seedbox (ec2 must be in run state)
 										if datas.ec2 != null
-											input.ui.disabled.input(readOnly,type=text,value=("http://"+datas.ec2.PublicDnsName),onClick=("window.open('http://"+datas.ec2.PublicDnsName+"','_blank')"))
+											input.ui.disabled.input(readOnly,type=text,value=("https://"+datas.ec2.PublicDnsName),onClick=("window.open('https://"+datas.ec2.PublicDnsName+"','_blank')"))
 										else
 											input.ui.disabled.input(readOnly)
 									button.ui.submit.fluid.button Save credentials
