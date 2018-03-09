@@ -12,6 +12,7 @@ apt update -y && apt upgrade -y
 apt install rtorrent git sshfs apache2 php unzip unrar-free mediainfo ffmpeg sox curl -y
 
 # Configure apache
+a2enmod ssl
 a2dissite 000-default.conf
 a2enssite default-ssl.conf
 service apache2 reload
